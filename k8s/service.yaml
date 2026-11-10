@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fcg-catalog-api
+  labels:
+    app: fcg-catalog-api
+spec:
+  type: ClusterIP
+  selector:
+    app: fcg-catalog-api
+  ports:
+    - port: 80
+      targetPort: 8080

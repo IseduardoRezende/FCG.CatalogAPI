@@ -1,0 +1,66 @@
+using FCG.Catalog.Api.Extensions;
+using FCG.Catalog.Application.DTOs.Games;
+using FCG.Catalog.Application.Services.Interfaces;
+using FCG.Catalog.Domain.Commons;
+using FCG.Catalog.Domain.Commons.Result;
+using FCG.Catalog.Domain.Enums;
+using FCG.Catalog.Domain.Filters;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+
+namespace FCG.Catalog.Api.Controllers;
+
+[Route("api/v{version:apiVersion}/games")]
+public class GamesController : BaseController
+{
+    private readonly IGameService _gameService;
+
+    public GamesController(IGameService gameService)
+    {
+        _gameService = gameService;
+    }
+
+    [HttpPost]
+    [Authorize(Roles = nameof(UserRoles.Administrator))]
+    [SwaggerOperation(Summary = "Create game")]
+    [ProducesResponseType(typeof(SuccessResult<ReadGameDto>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateAsync([FromBody] CreateGameDto dto, CancellationToken cancellationToken)
+    {
+        return (await _gameService.CreateAsync(dto, cancellationToken)).ToActionResult(StatusCodes.Status201Created);
+    }
+
+    [HttpGet]
+    [SwaggerOperation(Summary = "List games")]
+    [ProducesResponseType(typeof(SuccessResult<Pagination<ReadGameDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPagedAsync([FromQuery] GameFilter filter, CancellationToken cancellationToken)
+    {
+        return (await _gameService.GetPagedAsync(filter, cancellationToken)).ToActionResult();
+    }
+
+    [HttpGet("{id:long}")]
+    [SwaggerOperation(Summary = "Get game by id")]
+    [ProducesResponseType(typeof(SuccessResult<ReadGameDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByIdAsync([FromRoute] long id, CancellationToken cancellationToken)
+    {
+        return (await _gameService.GetByIdAsync(id, cancellationToken)).ToActionResult();
+    }
+
+    [HttpPut("{id:long}")]
+    [Authorize(Roles = nameof(UserRoles.Administrator))]
+    [SwaggerOperation(Summary = "Update game")]
+    [ProducesResponseType(typeof(SuccessResult<ReadGameDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateAsync([FromRoute] long id, [FromBody] UpdateGameDto dto, CancellationToken cancellationToken)
+    {
+        return (await _gameService.UpdateAsync(id, dto, cancellationToken)).ToActionResult();
+    }
+
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = nameof(UserRoles.Administrator))]
+    [SwaggerOperation(Summary = "Delete game (soft delete)")]
+    [ProducesResponseType(typeof(SuccessResult<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeleteAsync([FromRoute] long id, CancellationToken cancellationToken)
+    {
+        return (await _gameService.DeleteAsync(id, cancellationToken)).ToActionResult();
+    }
+}
